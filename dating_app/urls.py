@@ -1,30 +1,27 @@
-"""
-URL configuration for dating_app project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path, include
-from django.http import HttpResponse
+from django.http import JsonResponse
+from rest_framework.decorators import api_view
 
-from users import views
+@api_view(['GET'])
+def api_root(request):
+    return JsonResponse({
+        "users": request.build_absolute_uri('users/'),
+        "spotify_login": request.build_absolute_uri('spotify/login/'),
+        "spotify_callback": request.build_absolute_uri('spotify/callback/'),
+        "spotify_sync": request.build_absolute_uri('spotify-sync/'),
+    })
 
 urlpatterns = [
-    path('', lambda request: HttpResponse("Welcome to Soulmate Dating App!")),
+    path('', lambda request: JsonResponse({"message": "Welcome to Soulmate Dating App!"})),
     path('admin/', admin.site.urls),
-    path('api/', include('users.urls')),
-    path('spotify/login/', views.spotify_login, name='spotify-login'),
-    path('spotify/callback/', views.spotify_callback, name='spotify-callback'),
 
+    # ✅ Route to API root
+    path('api/', api_root, name='api-root'),
+
+    # ✅ Include all user-related endpoints under /api/
+    path('api/', include('users.urls')),
+
+    # Optional: for browsable API login
+    path('api-auth/', include('rest_framework.urls')),
 ]
